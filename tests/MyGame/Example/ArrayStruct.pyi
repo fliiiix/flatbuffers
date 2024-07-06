@@ -48,3 +48,5 @@ class ArrayStructT(object):
 
 def CreateArrayStruct(builder: flatbuffers.Builder, a: float, b: int, c: int, d_a: int, d_b: typing.Literal[TestEnum.A, TestEnum.B, TestEnum.C], d_c: typing.Literal[TestEnum.A, TestEnum.B, TestEnum.C], d_d: int, e: int, f: int) -> uoffset: ...
 
+__all__ = ["ArrayStruct","ArrayStructT",]
+

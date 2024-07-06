@@ -18,3 +18,5 @@ class Any(object):
   TestSimpleTableWithEnum: int
 def AnyCreator(union_type: typing.Literal[Any.NONE, Any.Vec3, Any.TestSimpleTableWithEnum], table: table.Table) -> typing.Union[None, Vec3, TestSimpleTableWithEnum]: ...
 
+__all__ = ["Any",]
+

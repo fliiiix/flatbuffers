@@ -43,6 +43,7 @@ namespace {
 
 typedef std::pair<std::string, std::string> ImportMapEntry;
 typedef std::set<ImportMapEntry> ImportMap;
+typedef std::vector<std::string> Classes;
 
 // Hardcode spaces per indentation.
 static const CommentConfig def_comment = { nullptr, "#", nullptr };
@@ -60,17 +61,20 @@ class PythonStubGenerator {
   bool Generate() {
     if (parser_.opts.one_file) {
       Imports imports;
+      Classes classes{};
       std::stringstream stub;
 
       DeclareUOffset(stub, &imports);
       for (const EnumDef *def : parser_.enums_.vec) {
         if (def->generated) continue;
-        GenerateEnumStub(stub, def, &imports);
+        GenerateEnumStub(stub, def, &imports, &classes);
       }
       for (const StructDef *def : parser_.structs_.vec) {
         if (def->generated) continue;
-        GenerateStructStub(stub, def, &imports);
+        GenerateStructStub(stub, def, &imports, &classes);
       }
+
+      GenerateExplicitExport(stub, classes);
 
       std::string filename =
           namer_.config_.output_path +
@@ -80,14 +84,17 @@ class PythonStubGenerator {
       return SaveFile(filename, imports, stub);
     }
 
+    Classes classes{};
     for (const EnumDef *def : parser_.enums_.vec) {
       if (def->generated) continue;
 
       Imports imports;
+      Classes classes{};
       std::stringstream stub;
 
       DeclareUOffset(stub, &imports);
-      GenerateEnumStub(stub, def, &imports);
+      GenerateEnumStub(stub, def, &imports, &classes);
+      GenerateExplicitExport(stub, classes);
 
       std::string filename = namer_.Directories(*def->defined_namespace) +
                              namer_.File(*def, SkipFile::Suffix);
@@ -98,10 +105,12 @@ class PythonStubGenerator {
       if (def->generated) continue;
 
       Imports imports;
+      Classes classes{};
       std::stringstream stub;
 
       DeclareUOffset(stub, &imports);
-      GenerateStructStub(stub, def, &imports);
+      GenerateStructStub(stub, def, &imports, &classes);
+      GenerateExplicitExport(stub, classes);
 
       std::string filename = namer_.Directories(*def->defined_namespace) +
                              namer_.File(*def, SkipFile::Suffix);
@@ -276,8 +285,9 @@ class PythonStubGenerator {
   }
 
   void GenerateObjectStub(std::stringstream &stub, const StructDef *struct_def,
-                          Imports *imports) const {
+                          Imports *imports, Classes *classes) const {
     std::string name = namer_.ObjectType(*struct_def);
+    classes->push_back(name);
 
     stub << "class " << name;
     if (version_.major != 3) stub << "(object)";
@@ -313,8 +323,9 @@ class PythonStubGenerator {
   }
 
   void GenerateStructStub(std::stringstream &stub, const StructDef *struct_def,
-                          Imports *imports) const {
+                          Imports *imports, Classes *classes) const {
     std::string type = namer_.Type(*struct_def);
+    classes->push_back(type);
 
     stub << "class " << type;
     if (version_.major != 3) stub << "(object)";
@@ -418,7 +429,7 @@ class PythonStubGenerator {
     }
 
     if (parser_.opts.generate_object_based_api) {
-      GenerateObjectStub(stub, struct_def, imports);
+      GenerateObjectStub(stub, struct_def, imports, classes);
     }
 
     if (struct_def->fixed) {
@@ -528,8 +539,10 @@ class PythonStubGenerator {
   }
 
   void GenerateEnumStub(std::stringstream &stub, const EnumDef *enum_def,
-                        Imports *imports) const {
-    stub << "class " << namer_.Type(*enum_def);
+                        Imports *imports, Classes *classes) const {
+    std::string type = namer_.Type(*enum_def);
+    stub << "class " << type;
+    classes->push_back(type);
 
     if (version_.major == 3) {
       imports->Import("enum", "IntEnum");
@@ -584,6 +597,13 @@ class PythonStubGenerator {
       }
       ss << '\n';
     }
+  }
+
+  void GenerateExplicitExport(std::stringstream &ss, const Classes &classes) {
+    ss << '\n';
+    ss << "__all__ = [";
+    for (auto c : classes) { ss << "\"" << c << "\","; }
+    ss << "]\n";
   }
 
   const Parser &parser_;

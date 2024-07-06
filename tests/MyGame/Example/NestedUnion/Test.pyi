@@ -30,3 +30,5 @@ class TestT(object):
 
 def CreateTest(builder: flatbuffers.Builder, a: int, b: int) -> uoffset: ...
 
+__all__ = ["Test","TestT",]
+

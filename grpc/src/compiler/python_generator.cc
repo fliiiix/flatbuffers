@@ -135,10 +135,14 @@ class StubGenerator : public BaseGenerator {
 
   bool Generate() {
     Imports imports;
+    std::vector<std::string> classes{};
     std::stringstream stub;
     for (const ServiceDef *service : parser_.services_.vec) {
+      classes.push_back(service->name);
       Generate(stub, service, &imports);
     }
+
+    GenerateExplicitExport(stub, classes);
 
     std::string filename =
         namer_.config_.output_path +
@@ -222,6 +226,14 @@ class StubGenerator : public BaseGenerator {
        << "def add_" << service->name
        << "Servicer_to_server(servicer: " << service->name
        << "Servicer, server: grpc.Server) -> None: ...\n";
+  }
+
+  void GenerateExplicitExport(std::stringstream &stub,
+                              const std::vector<std::string> &classes) {
+    stub << '\n';
+    stub << "__all__ = [";
+    for (auto c : classes) { stub << "\"" << c << "\","; }
+    stub << "]\n";
   }
 };
 

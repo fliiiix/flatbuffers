@@ -44,3 +44,5 @@ class NestedStructT(object):
 
 def CreateNestedStruct(builder: flatbuffers.Builder, a: int, b: typing.Literal[TestEnum.A, TestEnum.B, TestEnum.C], c: typing.Literal[TestEnum.A, TestEnum.B, TestEnum.C], d: int) -> uoffset: ...
 
+__all__ = ["NestedStruct","NestedStructT",]
+

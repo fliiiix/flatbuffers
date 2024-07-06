@@ -13,3 +13,5 @@ class TestEnum(object):
   B: int
   C: int
 
+__all__ = ["TestEnum",]
+

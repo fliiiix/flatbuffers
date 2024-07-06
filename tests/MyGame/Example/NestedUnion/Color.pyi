@@ -13,3 +13,5 @@ class Color(object):
   Green: int
   Blue: int
 
+__all__ = ["Color",]
+
