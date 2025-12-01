@@ -535,9 +535,9 @@ jobs:
     steps:
        - uses: actions/checkout@v6
        - uses: bytecodealliance/actions/wasmtime/setup@v1
-       - uses: swiftwasm/setup-swiftwasm@v1
+       - uses: swiftwasm/setup-swiftwasm@v2
          with:
-           swift-version: "wasm-6.0.2-RELEASE"
+           tag: "wasm-6.0.2-RELEASE"
        - name: Test
          working-directory: tests/swift/Wasm.tests
          run: swift run carton test
